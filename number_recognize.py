@@ -1,7 +1,6 @@
 import torch
 import cv2
 import numpy as np
-import pytesseract
 from transformers import TrOCRProcessor, VisionEncoderDecoderModel
 from PIL import Image
 from utils.general import non_max_suppression, scale_boxes

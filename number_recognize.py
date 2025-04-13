@@ -1,7 +1,7 @@
 import torch
 import cv2
 import numpy as np
-import pytesseract
+from transformers import TrOCRProcessor, VisionEncoderDecoderModel
 from PIL import Image
 from utils.general import non_max_suppression, scale_boxes
 from ultralytics.utils import ops
@@ -45,9 +45,11 @@ for i, name in enumerate(classnames):
 # load pre-trained model
 weights = weights
 
-model = DetectMultiBackend(weights, device=torch.device('cpu'), dnn=False, data="data/coco128.yaml", fp16=False)
-stride, names, pt = model.stride, model.names, model.pt
-model.warmup(imgsz=(1 if pt or model.triton else 1, 3, 640, 640))  # warmup
+processor = TrOCRProcessor.from_pretrained("microsoft/trocr-base-printed")
+model = VisionEncoderDecoderModel.from_pretrained("microsoft/trocr-base-printed")
+model_yolo = DetectMultiBackend(weights, device=torch.device('cpu'), dnn=False, data="data/coco128.yaml", fp16=False)
+stride, names, pt = model_yolo.stride, model_yolo.names, model_yolo.pt
+model_yolo.warmup(imgsz=(1 if pt or model.triton else 1, 3, 640, 640))  # warmup
 
 def image_loader(img,imsize):
     '''
@@ -73,13 +75,13 @@ def get_pred(img, stride):
     im = im.transpose((2, 0, 1))[::-1]  # HWC to CHW, BGR to RGB
     im = np.ascontiguousarray(im)  # contiguous
 
-    im = torch.from_numpy(im).to(model.device)
-    im = im.half() if model.fp16 else im.float()  # uint8 to fp16/32
+    im = torch.from_numpy(im).to(model_yolo.device)
+    im = im.half() if model_yolo.fp16 else im.float()  # uint8 to fp16/32
     im /= 255  # 0 - 255 to 0.0 - 1.0
     if len(im.shape) == 3:
         im = im[None]  # expand for batch dim
 
-    pred = model(im)
+    pred = model_yolo(im)
     pred = non_max_suppression(pred, 0.25, 0.45, None, False, max_det=1000)
 
     return pred, im.shape
@@ -119,7 +121,9 @@ def inference():
 
                 image = Image.open('result.jpg')
 
-                recognized_text = pytesseract.image_to_string(image, config='--psm 6')
+                pixel_values = processor(image, return_tensors="pt").pixel_values
+                generated_ids = model.generate(pixel_values)
+                recognized_text = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
                 net_str = ''
                 for i in range(len(recognized_text)):
                     try:

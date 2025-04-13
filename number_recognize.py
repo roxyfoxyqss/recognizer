@@ -142,7 +142,7 @@ def recognize():
     newPhotos = request.files.getlist('newPhotos')
 
     if not oldPhotos or not newPhotos:
-        return jsonify({"message": "No files provided"}), 400
+        return jsonify({"oldNumber": '', "newNumber": '', "errorMessage": "No files provided"})
 
     resOld = []
     resNew = []
@@ -153,7 +153,7 @@ def recognize():
         cv2.imwrite('./image.jpg', im)
         inf_res = inference()
         if inf_res == "Number don't find":
-            return jsonify({"oldNumber": '', "newPhotos": '', "message": "Number don't find"})
+            return jsonify({"oldNumber": '', "newNumber": '', "errorMessage": "Old number don't find"})
         if inf_res:
             resOld.append(inf_res)
     for file in newPhotos:
@@ -162,10 +162,18 @@ def recognize():
         cv2.imwrite('./image.jpg', im)
         inf_res = inference()
         if inf_res == "Number don't find":
-            return jsonify({"oldNumber": '', "newPhotos": '', "message": "Number don't find"})
+            return jsonify({"oldNumber": '', "newNumber": '', "errorMessage": "New number don't find"})
         if inf_res:
             resNew.append(inf_res)
+    mostOld = most_common_string(resOld)
+    mostNew = most_common_string(resNew)
+    if mostOld == '' and mostNew == '':
+        return jsonify({"oldNumber": '', "newNumber": '', "errorMessage": "Old number and new number don't recognize"})
+    if mostOld == '':
+        return jsonify({"oldNumber": '', "newNumber": '', "errorMessage": "Old number don't recognize"})
+    if mostNew == '':
+        return jsonify({"oldNumber": '', "newNumber": '', "errorMessage": "New number don't recognize"})
 
-    return jsonify({"oldNumber": most_common_string(resOld), "newPhotos": most_common_string(resNew), "message": "Success recognized"})
+    return jsonify({"oldNumber": most_common_string(resOld), "newNumber": most_common_string(resNew), "errorMessage": "Success recognized"})
 
-app.run(debug=True, port=5555)
+app.run(host="0.0.0.0", port=5555)

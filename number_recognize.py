@@ -2,6 +2,7 @@ import torch
 import cv2
 import numpy as np
 import pytesseract
+from transformers import TrOCRProcessor, VisionEncoderDecoderModel
 from PIL import Image
 from utils.general import non_max_suppression, scale_boxes
 from ultralytics.utils import ops
@@ -45,6 +46,8 @@ for i, name in enumerate(classnames):
 # load pre-trained model
 weights = weights
 
+processor = TrOCRProcessor.from_pretrained("microsoft/trocr-base-printed")
+model = VisionEncoderDecoderModel.from_pretrained("microsoft/trocr-base-printed")
 model = DetectMultiBackend(weights, device=torch.device('cpu'), dnn=False, data="data/coco128.yaml", fp16=False)
 stride, names, pt = model.stride, model.names, model.pt
 model.warmup(imgsz=(1 if pt or model.triton else 1, 3, 640, 640))  # warmup
@@ -119,7 +122,9 @@ def inference():
 
                 image = Image.open('result.jpg')
 
-                recognized_text = pytesseract.image_to_string(image, config='--psm 6')
+                pixel_values = processor(image, return_tensors="pt").pixel_values
+                generated_ids = model.generate(pixel_values)
+                recognized_text = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
                 net_str = ''
                 for i in range(len(recognized_text)):
                     try:

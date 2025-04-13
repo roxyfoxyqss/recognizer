@@ -10,5 +10,5 @@ WORKDIR /yolov5/
 COPY . .
 RUN pip install -r requirements.txt
 RUN pip install Flask
-RUN pip install pytesseract
+RUN pip install transformers==4.30.0
 ENTRYPOINT [ "python3", "number_recognize.py"]

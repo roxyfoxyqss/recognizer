@@ -94,12 +94,10 @@ def inference():
     im0 = img.copy()
 
     prediction, im_shape = get_pred(img, stride)
-    # print(prediction)
 
     if prediction is not None:
         for i, det in enumerate(prediction):
             det[:, :4] = scale_boxes(im_shape[2:], det[:, :4], im0.shape).round()
-            # print(det)
 
             # Write results
             if len(det) == 0:
@@ -111,8 +109,6 @@ def inference():
                 b = ops.xyxy2xywh(xyxy.view(-1, 4))  # boxes
                 b[:, 2:] = b[:, 2:] * 1.02 + 10  # box wh * gain + pad
                 xyxy = ops.xywh2xyxy(b).long()
-                # print(xyxy, '\n\n\n')
-                # print(int(xyxy[0, 1]), int(xyxy[0, 3]), int(xyxy[0, 0]), int(xyxy[0, 2]))
                 crop = img[int(xyxy[0, 1]) : int(xyxy[0, 3]), int(xyxy[0, 0]) : int(xyxy[0, 2]), :: 1]
                 cr_shape = crop.shape
                 if cr_shape[0] > cr_shape[1]:

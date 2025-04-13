@@ -174,6 +174,6 @@ def recognize():
     if mostNew == '':
         return jsonify({"oldNumber": '', "newNumber": '', "errorMessage": "New number don't recognize"})
 
-    return jsonify({"oldNumber": most_common_string(resOld), "newNumber": most_common_string(resNew), "errorMessage": "Success recognized"})
+    return jsonify({"oldNumber": most_common_string(resOld), "newNumber": most_common_string(resNew)})
 
 app.run(host="0.0.0.0", port=5555)

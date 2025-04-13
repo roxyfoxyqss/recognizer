@@ -1,0 +1,6 @@
+train: ../Packages/train/images
+val: ../Packages/valid/images
+test: ../Packages/test/images
+
+nc: 1
+names: ['package']

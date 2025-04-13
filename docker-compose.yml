@@ -1,0 +1,6 @@
+version: '3'
+services:
+  recongition:
+    image: recognizer
+    ports:
+      - "5555:5555"

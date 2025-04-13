@@ -2,5 +2,6 @@ version: '3'
 services:
   recongition:
     image: recognizer
+    network_mode: "host"
     ports:
       - "5555:5555"

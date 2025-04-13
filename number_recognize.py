@@ -35,7 +35,7 @@ def most_common_string(array):
 app = Flask(__name__)
 
 
-weights = './runs/train/numbers/weights/best.pt'
+weights = 'best.pt'
 classnames = ['number']
 
 label = {}
@@ -86,7 +86,7 @@ def get_pred(img, stride):
 
 def inference():
     try:
-        img = cv2.imread('temp/image.jpg')
+        img = cv2.imread('image.jpg')
     except:
         return "Image don't readed"
     im0 = img.copy()
@@ -148,17 +148,21 @@ def recognize():
     resNew = []
 
     for file in oldPhotos:
-        file.save(f'./temp/image.jpg')
-        im = cv2.imread('./temp/image.jpg')
-        cv2.imwrite('./temp/image.jpg', im)
+        file.save('./image.jpg')
+        im = cv2.imread('./image.jpg')
+        cv2.imwrite('./image.jpg', im)
         inf_res = inference()
+        if inf_res == "Number don't find":
+            return jsonify({"oldNumber": '', "newPhotos": '', "message": "Number don't find"})
         if inf_res:
             resOld.append(inf_res)
     for file in newPhotos:
-        file.save(f'./temp/image.jpg')
-        im = cv2.imread('./temp/image.jpg')
-        cv2.imwrite('./temp/image.jpg', im)
+        file.save('./image.jpg')
+        im = cv2.imread('./image.jpg')
+        cv2.imwrite('./image.jpg', im)
         inf_res = inference()
+        if inf_res == "Number don't find":
+            return jsonify({"oldNumber": '', "newPhotos": '', "message": "Number don't find"})
         if inf_res:
             resNew.append(inf_res)
 
